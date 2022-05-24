@@ -103,11 +103,12 @@ next()
       res.send({ result, token });
    })
        //user info api get
-       app.get("userinfo",async(req,res)=>{
-        const email=req.params.email
-        console.log(email);
+       app.get("/userinfo",async(req,res)=>{
+        const email=req.query.email
+
+   
         const query={email:email}
-        const info=await userInfo.find(query).toArray()
+        const info=await userInfo.findOne(query)
         res.send(info)
        })
  //put method for add user
