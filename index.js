@@ -38,7 +38,8 @@ async function run() {
         const userInfo=client.db("bicyle-parts").collection("userInfo")
         const userCollection=client.db("bicyle-parts").collection("user")
         const reviewCollection=client.db("bicyle-parts").collection("review")
-        const productCollection=client.db("bicyle-parts").collection("product")
+        const orderCollection=client.db("bicyle-parts").collection("order")
+
         //verifyAdmin
 const verifyAdmin=async(req,res,next)=>{
     const requester=req.decoded.email
@@ -61,21 +62,54 @@ next()
         const result=await collection.findOne(query)
         res.send(result)
     })
-       //user info api create
-       app.post('/info',async(req,res)=>{
-        const doc =req.body;
-        const result=await userInfo.insertOne(doc)
+    //update specific item
+    app.put('/parts/:id', async (req, res) => {
+        const id = req.params.id;
+        const updatedQuantity = req.body.updatedQuantity;
+        console.log(updatedQuantity);
+        const filter = { _id: ObjectId(id) };
+        console.log(filter);
+        const options = { upsert: true };
+        const updatedDoc = {
+            $set: {
+                quantity: updatedQuantity
+            }
+        };
+        const result = await collection.updateOne(filter, updatedDoc, options);
+            
+            res.send(result);
+
+        })
+    //delete specific order
+    app.delete('/puts/:id',async(req,res)=>{
+        const id=req.params.id;
+        const query={_id:ObjectId(id)}
+        const result = await collection.deleteOne(query);
         res.send(result)
-        
+
     })
+       //user info api create
+      //put method for add info user
+ app.put('/info/:email',async(req,res)=>{
+    const email=req.params.email
+    const user=req.body
+    const filter = { email: email };
+    const options = { upsert: true };
+    const updateDoc = {
+        $set: user
+      };
+      const result = await userInfo.updateOne(filter, updateDoc, options);
+      const token = jwt.sign({ email: email }, process.env.ACCESS_TOKEN, { expiresIn: '1y' })
+      res.send({ result, token });
+   })
        //user info api get
-       //my item
-       app.get('/userinfo', async (req, res) => {
-        const query = {};
-        const cursor = userInfo.find(query);
-        const profile = await cursor.toArray();
-        res.send(profile);
-    })
+       app.get("userinfo",async(req,res)=>{
+        const email=req.params.email
+        console.log(email);
+        const query={email:email}
+        const info=await userInfo.find(query).toArray()
+        res.send(info)
+       })
  //put method for add user
  app.put('/user/:email',async(req,res)=>{
     const email=req.params.email
@@ -137,7 +171,43 @@ app.post('/parts',verifyJWT,verifyAdmin,async(req,res)=>{
     res.send(result)
     
 })
+// post order
 
+        app.post('/order',async(req,res)=>{
+            const order=req.body;
+            const result=await orderCollection.insertOne(order);
+            res.send(result);
+        })
+        //get orders from a user ...
+        app.get('/order',verifyJWT,async(req,res)=>{
+            const customer=req.query.customer;
+           const decodedEmail=req.decoded.email;
+           if(customer===decodedEmail){
+            
+            const query={customer:customer};
+            const orders=await orderCollection.find(query).toArray();
+                return res.send(orders);
+           }
+           else{
+               return res.status(403).send({message:'forbidden access'})
+           }
+            
+        })
+        app.get('/manageOrder',verifyJWT, async(req,res)=>{
+            const query=req.body
+            const result=orderCollection.find(query)
+            const orders=await result.toArray()
+            res.send(orders)
+           })
+        
+         //delete specific order
+     app.delete('/order/:id',async(req,res)=>{
+        const id=req.params.id;
+        const query={_id:ObjectId(id)}
+        const result = await orderCollection.deleteOne(query);
+        res.send(result)
+
+    })
     }
     finally{
 
