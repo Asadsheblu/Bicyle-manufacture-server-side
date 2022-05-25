@@ -39,6 +39,7 @@ async function run() {
         const userCollection=client.db("bicyle-parts").collection("user")
         const reviewCollection=client.db("bicyle-parts").collection("review")
         const orderCollection=client.db("bicyle-parts").collection("order")
+        const paymentCollection=client.db("bicyle-parts").collection("payment")
 
         //verifyAdmin
 const verifyAdmin=async(req,res,next)=>{
@@ -49,6 +50,42 @@ next()
 
 }
 }
+const stripe = require('stripe')(process.env.STRIPE_KEY);
+
+//payment api create
+app.post('/create-payment-intent', verifyJWT, async(req, res) =>{
+    const order = req.body;
+    const price = order.price;
+    const amount = price*100;
+    const paymentIntent = await stripe.paymentIntents.create({
+      amount : amount,
+      currency: 'usd',
+      payment_method_types:['card']
+    });
+    res.send({clientSecret: paymentIntent.client_secret})
+  });
+   app.get('/serial',async(req,res)=>{
+    const query={}
+    const result=DportalSer.find(query).project({name:1})
+    const problem=await result.toArray()
+    res.send(problem)
+   })
+   app.patch('/order/:id', verifyJWT, async (req, res) => {
+    const id = req.params.id;
+    const payment = req.body;
+    const filter = { _id: ObjectId(id) };
+    const updatedDoc = {
+        $set: {
+            paid: true,
+            transactionId: payment.transactionId
+        }
+    }
+
+    const result = await paymentCollection.insertOne(payment);
+    const updatedOrder = await orderCollection.updateOne(filter, updatedDoc);
+    res.send(updatedOrder);
+})
+
         //get api for parts
        app.get('/parts',async(req,res)=>{
         const query={}
@@ -99,7 +136,7 @@ next()
         $set: user
       };
       const result = await userInfo.updateOne(filter, updateDoc, options);
-      const token = jwt.sign({ email: email }, process.env.ACCESS_TOKEN, { expiresIn: '1y' })
+      const token = jwt.sign({ email: email }, process.env.ACCESS_TOKEN, { expiresIn: '30d' })
       res.send({ result, token });
    })
        //user info api get
@@ -179,6 +216,13 @@ app.post('/parts',verifyJWT,verifyAdmin,async(req,res)=>{
             const result=await orderCollection.insertOne(order);
             res.send(result);
         })
+        app.get('/order/:id',async(req,res)=>{
+            const id=req.params.id
+            const query={_id:ObjectId(id)}
+            const result=orderCollection.find(query)
+            const item=await result.toArray()
+            res.send(item)
+           })
         //get orders from a user ...
         app.get('/order',verifyJWT,async(req,res)=>{
             const customer=req.query.customer;
