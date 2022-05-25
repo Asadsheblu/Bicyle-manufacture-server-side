@@ -118,7 +118,7 @@ app.post('/create-payment-intent', verifyJWT, async(req, res) =>{
 
         })
     //delete specific order
-    app.delete('/puts/:id',async(req,res)=>{
+    app.delete('/puts/:id',verifyJWT,async(req,res)=>{
         const id=req.params.id;
         const query={_id:ObjectId(id)}
         const result = await collection.deleteOne(query);
