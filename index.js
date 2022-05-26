@@ -6,7 +6,7 @@ const cors=require('cors');
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const { query } = require('express')
 const corsOption={
-    origin:"https://bicycle-parts-manufacture.web.app",
+    origin:"*",
     optionSuccessStatus:200
 }
 app.use(cors(corsOption))
