@@ -1,10 +1,6 @@
 const express=require("express")
 const app=express()
-const jwt = require('jsonwebtoken');
-require('dotenv').config()
-const cors=require('cors');
-const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
-const { query } = require('express')
+const cors=require("cors")
 const corsConfig = {
     origin: '*',
     credentials: true,
@@ -12,13 +8,17 @@ const corsConfig = {
     }
     app.use(cors(corsConfig))
     app.options("*", cors(corsConfig))
-    app.use(express.json())
     app.use(function (req, res, next) {
     res.header("Access-Control-Allow-Origin", "*")
     res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept,authorization")
     next()
     })
-app.use(cors())
+const jwt = require('jsonwebtoken');
+require('dotenv').config()
+
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
+const { query } = require('express')
+
 const port = process.env.PORT || 5000;
 app.use(express.json());
 function verifyJWT (req,res,next){
@@ -66,17 +66,17 @@ next()
 const stripe = require('stripe')(process.env.STRIPE_KEY);
 
 //payment api create
-app.post('/create-payment-intent', verifyJWT, async(req, res) =>{
-    const order = req.body;
-    const price = order.price;
-    const amount = price*100;
+app.post('/create-payment-intent', verifyJWT, async (req, res) => {
+    const product = req.body;
+    const price = product.price;
+    const amount = price * 100;
     const paymentIntent = await stripe.paymentIntents.create({
-      amount : amount,
-      currency: 'usd',
-      payment_method_types:['card']
-    });
-    res.send({clientSecret: paymentIntent.client_secret})
-  });
+        amount: amount,
+        currency: 'usd',
+        payment_method_types: ['card']
+    })
+    res.send({ clientSecret: paymentIntent.client_secret })
+})
    app.get('/serial',async(req,res)=>{
     const query={}
     const result=DportalSer.find(query).project({name:1})
