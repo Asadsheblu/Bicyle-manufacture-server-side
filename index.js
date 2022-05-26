@@ -1,18 +1,7 @@
 const express=require("express")
 const app=express()
 const cors=require("cors")
-const corsConfig = {
-    origin: '*',
-    credentials: true,
-    methods: ['GET', 'POST', 'PUT', 'DELETE']
-    }
-    app.use(cors(corsConfig))
-    app.options("*", cors(corsConfig))
-    app.use(function (req, res, next) {
-    res.header("Access-Control-Allow-Origin", "*")
-    res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept,authorization")
-    next()
-    })
+
 const jwt = require('jsonwebtoken');
 require('dotenv').config()
 
