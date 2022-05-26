@@ -5,6 +5,11 @@ require('dotenv').config()
 const cors=require('cors');
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const { query } = require('express')
+const corsOption={
+    origin:"https://bicycle-parts-manufacture.web.app",
+    optionSuccessStatus:200
+}
+app.use(cors(corsOption))
 app.use(cors())
 const port = process.env.PORT || 5000;
 app.use(express.json());
