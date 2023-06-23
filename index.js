@@ -19,7 +19,7 @@ const { query } = require('express')
 //     res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept,authorization")
 //     next()
 // })
-app.use(cors({origin:'https://bicycle-parts-manufacture.web.app'}))
+app.use(cors({origin:'https://bicyle-manufacture-client-side.vercel.app/'}))
 const port = process.env.PORT || 5000;
 
 function verifyJWT (req,res,next){
